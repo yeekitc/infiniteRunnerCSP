@@ -14,20 +14,95 @@
 <body>
   	<!-- Setting Up Our p5.js Structure code goes below the <script> tag-->
 		<script>
+		var runner;
+		var runningAnimation;
+		var jumpingAnimation;
+		var gameBackground;
+		var platformBackground;
+		var gameFont;
+		var gameMusic;
+		var gameOverMusic;
+		var jumpSound;
+		var gameOver = false;
+		var platformsGroup;
+		var currentPlatformLocation;
+		var gravity = 1;
+
+		function preload(){
+			jumpingAnimation = loadAnimation(
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/jump00.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/jump01.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/jump02.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/jump03.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/jump05.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/jump06.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/jump07.png'   
+			);
+			runningAnimation = loadAnimation(
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run00.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run01.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run02.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run03.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run04.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run05.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run06.png', 
+			'https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/kitty/run07.png'  
+			);
+			gameBackground = loadImage('https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultBackground.png');
+			platformBackground = loadImage('https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultPlatform.png');
+			gameFont = loadFont('https://la-wit.github.io/build-an-infinite-runner/build/fonts/ARCADE_R.TTF');
+			gameMusic = loadSound('https://la-wit.github.io/build-an-infinite-runner/build/sounds/generic-game-loop-4.mp3');
+			gameOverMusic = loadSound('https://la-wit.github.io/build-an-infinite-runner/build/sounds/over.mp3');
+			jumpSound = loadSound('https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3');               
+		}
+		function setup(){
+			createCanvas(840,390);
+			runner = createSprite(50, 100, 25, 40);
+			runner.depth = 4;
+			runner.addAnimation('jump', jumpingAnimation);
+			runner.addAnimation('run', runningAnimation);
+			runner.setCollider('rectangle', 0, 0, 10, 41);
+			platformsGroup = new Group;
+			currentPlatformLocation = -width;
+		}
+		
+		function draw(){
 			
-			function setup(){
-       createCanvas(840,390);
-       background(113, 137, 176);
-     	}
-			function draw(){
-				fill(213, 227, 247);
-				ellipse(100,200,30,30);
+			if(!gameOver){
+				background(200);
+				runner.velocity.y += gravity;
+				runner.collide(platformsGroup, solidGround);
+				addNewPlatforms();
+				drawSprites();
 			}
+			if(gameOver){
+
+			}
+		}
+
+		function addNewPlatforms(){
+			if(platformsGroup.length < 5){
+				var currentPlatformLength = 1132;
+				var platform = createSprite((currentPlatformLocation * 1.3), random(300, 400), 1132, 336);
+				platform.collide(runner);
+				currentPlatformLocation += currentPlatformLength;
+				platform.addAnimation('default', platformBackground);
+				platform.depth = 3;
+				platformsGroup.add(platform);
+			}
+		}
+
+		function solidGround(){
+			runner.velocity.y = 0;
+			runner.changeAnimation("run");
+			if(runner.touching.right){
+				runner.velocity.x = 0;
+				runner.velocity.y += 30;
+			}
+		}
 
 
-
-
-    
+	
   	</script>
   </body>
 </html>
