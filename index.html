@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,13 +6,18 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>CS PROJECT</title>
 
-  <script type="text/javascript" src="https://la-wit.github.io/build-an-infinite-runner/build/js/lib/p5.js"></script>
-  <script type="text/javascript" src="https://la-wit.github.io/build-an-infinite-runner/build/js/lib/p5.play.js"></script>
-  <script type="text/javascript" src="https://la-wit.github.io/build-an-infinite-runner/build/js/lib/p5.sound.js"></script>
+	<link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
   	<!-- Setting Up Our p5.js Structure code goes below the <script> tag-->
+		<script type="text/javascript" src="https://la-wit.github.io/build-an-infinite-runner/build/js/lib/p5.js"></script>
+  	<script type="text/javascript" src="https://la-wit.github.io/build-an-infinite-runner/build/js/lib/p5.play.js"></script>
+  	<script type="text/javascript" src="https://la-wit.github.io/build-an-infinite-runner/build/js/lib/p5.sound.js"></script>
+
+		<div id="p5_loading" class='loading-screen'><p>LOADING</p></div>
+
 		<script>
 		var runner;
 		var runningAnimation;
@@ -71,6 +76,8 @@
 			platformsGroup = new Group; //groups = arrays, or ordered lists of things, that hold sprites specifically
 			// platformsGroup is a group that holds our platforms
 			backgroundTiles = new Group;
+			gravity = 1;
+			currentPlatformLocation = -width;
 			currentPlatformLocation = -width; //width only works here bc it gets defined in createCanvas()
 			gameMusic.play();
 		}
@@ -79,25 +86,27 @@
 			
 			if(!gameOver){
 				background(200);
+
 				runner.velocity.y += gravity;
 				runner.velocity.x = runnerSpeed;
 				runner.collide(platformsGroup, solidGround);
+
 				addNewPlatforms();
+				removeOldPlatforms();
 				jumpDetection();
 				camera.position.x = runner.position.x + 300;
-				removeOldPlatforms();
+				
 				addNewBackgroundTiles();
 				removeOldBackgroundTiles();
 				fallCheck();
 				drawSprites();
 				updateScore();
+				playerScore += 0.01;
 			}
 			if(gameOver){
-				gameOverText();
 				updateSprites(false);
-				if(keyWentDown(UP_ARROW)){
-					newGame();
-				}
+				gameOverText();
+				newGame();
 			}
 		}
 
@@ -115,19 +124,21 @@
 		}
 		
 		function newGame(){
-			platformsGroup.removeSprites();
-			backgroundTiles.removeSprites();
-			gameOver = false;
-			updateSprites(true);
-			runnerSpeed = 15;
-			runner.position.x = 50;
-			runner.position.y = 100;
-			runner.velocity.x = runnerSpeed;
-			currentPlatformLocation = -width;
-			currentBackgroundTilePosition = -width;
-			playerScore = 0;
-			gameOverMusic.stop();
-			gameMusic.play();
+			if(keyWentDown(UP_ARROW)){
+				platformsGroup.removeSprites();
+				backgroundTiles.removeSprites();
+				gameOver = false;
+				updateSprites(true);
+				runnerSpeed = 15;
+				runner.position.x = 50;
+				runner.position.y = 100;
+				runner.velocity.x = runnerSpeed;
+				currentPlatformLocation = -840;
+				currentBackgroundTilePosition = -840;
+				playerScore = 0;
+				gameOverMusic.stop();
+				gameMusic.play();
+			}
 		}
 		
 		function gameOverText(){
@@ -149,17 +160,17 @@
 		}
 		
 		function fallCheck(){
-			if(runner.position.y > height){
+			if(runner.position.y > 390){
 				gameOver = true;
+				gameMusic.stop();
+				gameOverMusic.play();
 			}
-			gameMusic.stop();
-			gameOverMusic.play();
 		}
 		
 		function addNewBackgroundTiles(){
 			if(backgroundTiles.length < 3){
 				currentBackgroundTilePosition += 839;
-				var bgLoop = createSprite(currentBackgroundTilePosition, height/2, 840, 390);
+				var bgLoop = createSprite(currentBackgroundTilePosition, 390/2, 840, 390);
 				bgLoop.addAnimation('bg',gameBackground);
 				bgLoop.depth = 1;
 				backgroundTiles.add(bgLoop);
@@ -168,7 +179,7 @@
 
 		function removeOldBackgroundTiles(){
 			for(var i = 0; i < backgroundTiles.length; i++){
-				if((backgroundTiles[i].position.x) < runner.position.x-width){
+				if((backgroundTiles[i].position.x) < runner.position.x-840){
 					backgroundTiles[i].remove();
 				}
 			}
@@ -188,6 +199,7 @@
 		}
 
 		function solidGround(){
+			jumpSound.stop();
 			runner.velocity.y = 0;
 			runner.changeAnimation("run");
 			if(runner.touching.right){
@@ -198,6 +210,7 @@
 
 		function jumpDetection(){
 			if(keyWentDown(UP_ARROW)){
+				jumpSound.play();
 				runner.changeAnimation("jump");
 				runner.animation.rewind();
 				runner.velocity.y = -jumpPower;
